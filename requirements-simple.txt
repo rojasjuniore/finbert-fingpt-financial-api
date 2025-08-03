@@ -1,0 +1,29 @@
+# Core API Framework
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# Machine Learning - compatible versions
+torch
+transformers
+tokenizers
+numpy
+scikit-learn
+
+# HTTP and Async
+httpx
+aiofiles
+
+# Environment and Configuration
+python-dotenv
+
+# Testing Dependencies
+pytest
+pytest-asyncio
+httpx
+
+# Logging
+loguru
+
+# Data processing (avoiding pandas issues)
