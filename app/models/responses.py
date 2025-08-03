@@ -56,6 +56,8 @@ class BulkSentimentResponse(BaseModel):
 
 class HealthCheckResponse(BaseModel):
     """Response model for health check"""
+    model_config = {"protected_namespaces": ()}
+    
     status: str = Field(..., description="Health status (healthy/unhealthy/degraded)")
     api_version: Optional[str] = Field(default=None, description="API version")
     model_loaded: Optional[bool] = Field(default=None, description="Whether models are loaded")
@@ -69,6 +71,8 @@ class HealthCheckResponse(BaseModel):
 
 class ModelInfoResponse(BaseModel):
     """Response model for model information"""
+    model_config = {"protected_namespaces": ()}
+    
     model_name: str = Field(..., description="Name of the loaded model")
     model_loaded: bool = Field(..., description="Whether the model is loaded")
     config: Dict[str, Any] = Field(..., description="Model configuration")

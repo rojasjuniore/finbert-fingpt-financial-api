@@ -49,7 +49,7 @@ class FinBERTService:
             logger.info("Loading tokenizer...")
             self.tokenizer = AutoTokenizer.from_pretrained(
                 settings.model_name,
-                use_auth_token=settings.hf_token,
+                token=settings.hf_token,
                 cache_dir=settings.transformers_cache
             )
             
@@ -57,7 +57,7 @@ class FinBERTService:
             logger.info("Loading model...")
             self.model = AutoModelForSequenceClassification.from_pretrained(
                 settings.model_name,
-                use_auth_token=settings.hf_token,
+                token=settings.hf_token,
                 cache_dir=settings.transformers_cache
             )
             
@@ -71,7 +71,7 @@ class FinBERTService:
                 model=self.model,
                 tokenizer=self.tokenizer,
                 device=0 if self.device.type == "cuda" else -1,
-                return_all_scores=True
+                top_k=None
             )
             
             self.load_time = time.time() - start_time
