@@ -147,7 +147,7 @@ Thumbs.db
 .claude-flow/
 .hive-mind/
 
-# Model files (if storing locally)
-models/
+# Model files (if storing locally - exclude downloaded model binaries but keep code models)
+/models/
 *.bin
 *.safetensors
