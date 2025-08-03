@@ -40,12 +40,12 @@ def setup_logging():
     
     # Configure format based on settings
     if settings.log_format.lower() == "json":
-        # JSON format for production
+        # JSON format for production - use built-in serialization
         logger.add(
             sys.stdout,
-            format=JSONFormatter().format,
+            format="{time} | {level} | {name}:{function}:{line} | {message}",
             level=settings.log_level.upper(),
-            serialize=False
+            serialize=True  # Use built-in JSON serialization
         )
     else:
         # Human-readable format for development

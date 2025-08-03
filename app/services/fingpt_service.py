@@ -11,6 +11,7 @@ import asyncio
 
 from ..core.config import get_settings
 from ..models.responses import FinGPTResponse
+from .finnhub_service import finnhub_service
 
 settings = get_settings()
 
@@ -200,14 +201,16 @@ class FinGPTService:
     async def analyze_financial_text(
         self,
         text: str,
-        analysis_type: str = "general"
+        analysis_type: str = "general",
+        symbol: Optional[str] = None
     ) -> Dict:
         """
-        Analyze financial text using FinGPT
+        Analyze financial text using FinGPT with optional Finnhub data enhancement
         
         Args:
             text: Text to analyze
             analysis_type: Type of analysis (general, sentiment, forecast, risk)
+            symbol: Optional stock symbol for enhanced analysis with Finnhub data
             
         Returns:
             Analysis results dictionary
@@ -215,32 +218,57 @@ class FinGPTService:
         if not self.model_loaded:
             raise RuntimeError("Model not loaded. Call load_model() first.")
         
-        # Create analysis prompt based on type
-        prompts = {
-            "general": f"Analyze the following financial text and provide insights:\\n\\n{text}\\n\\nAnalysis:",
-            "sentiment": f"Analyze the sentiment of this financial text and explain the reasoning:\\n\\n{text}\\n\\nSentiment Analysis:",
-            "forecast": f"Based on this financial information, provide a market forecast:\\n\\n{text}\\n\\nForecast:",
-            "risk": f"Identify and analyze the financial risks mentioned in this text:\\n\\n{text}\\n\\nRisk Analysis:"
+        # Get enhanced context from Finnhub if symbol provided
+        finnhub_context = ""
+        finnhub_data = None
+        if symbol and finnhub_service.is_available():
+            try:
+                logger.info(f"Fetching Finnhub data for enhanced analysis: {symbol}")
+                finnhub_data = await finnhub_service.get_comprehensive_data(symbol)
+                
+                if finnhub_data.get('available'):
+                    insights = finnhub_service.extract_key_insights(finnhub_data)
+                    if insights:
+                        finnhub_context = f"\\n\\nReal-time market data for {symbol}:\\n" + "\\n".join(f"• {insight}" for insight in insights[:8])
+                        logger.info(f"Enhanced analysis with {len(insights)} Finnhub insights")
+            except Exception as e:
+                logger.warning(f"Could not fetch Finnhub data for {symbol}: {str(e)}")
+        
+        # Create analysis prompt based on type with enhanced context
+        base_prompts = {
+            "general": f"Analyze the following financial text and provide comprehensive insights:{finnhub_context}\\n\\nText to analyze: {text}\\n\\nAnalysis:",
+            "sentiment": f"Analyze the sentiment of this financial text and explain the reasoning with market context:{finnhub_context}\\n\\nText: {text}\\n\\nSentiment Analysis:",
+            "forecast": f"Based on this financial information and current market data, provide a detailed forecast:{finnhub_context}\\n\\nText: {text}\\n\\nMarket Forecast:",
+            "risk": f"Identify and analyze financial risks with current market context:{finnhub_context}\\n\\nText: {text}\\n\\nRisk Analysis:"
         }
         
-        prompt = prompts.get(analysis_type, prompts["general"])
+        prompt = base_prompts.get(analysis_type, base_prompts["general"])
         
         try:
             response = await self.generate_text(
                 prompt=prompt,
-                max_length=300,
+                max_length=400 if finnhub_context else 300,  # Longer response for enhanced analysis
                 temperature=0.3,  # Lower temperature for more focused analysis
                 top_p=0.8,
                 do_sample=True
             )
             
-            return {
+            result = {
                 "analysis_type": analysis_type,
                 "original_text": text,
                 "analysis": response.generated_text,
                 "model_used": self.model_name,
-                "processing_time": response.processing_time
+                "processing_time": response.processing_time,
+                "enhanced_with_finnhub": bool(finnhub_context),
+                "symbol": symbol.upper() if symbol else None
             }
+            
+            # Add key insights extracted from analysis
+            if finnhub_data and finnhub_data.get('available'):
+                result["market_data_insights"] = finnhub_service.extract_key_insights(finnhub_data)
+                result["data_timestamp"] = finnhub_data.get('timestamp')
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error in financial text analysis: {str(e)}")

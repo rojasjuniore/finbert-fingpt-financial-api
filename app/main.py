@@ -13,6 +13,7 @@ from loguru import logger
 from .core.config import get_settings
 from .core.logging import setup_logging
 from .api.routes import router
+from .api.finnhub_routes import router as finnhub_router
 from .services.finbert_service import finbert_service
 from .services.fingpt_service import fingpt_service
 from .utils.middleware import LoggingMiddleware, RateLimitMiddleware
@@ -97,6 +98,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 
 # Include API routes
 app.include_router(router, prefix="/api/v1", tags=["sentiment-analysis"])
+app.include_router(finnhub_router, prefix="/api/v1", tags=["enhanced-analysis"])
 
 # Health check endpoint at root
 @app.get("/", include_in_schema=False)

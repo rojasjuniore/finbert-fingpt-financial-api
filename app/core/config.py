@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Hugging Face Configuration
     hf_token: Optional[str] = Field(default=None, env="HF_TOKEN")
     
+    # Finnhub Configuration
+    finnhub_api_key: Optional[str] = Field(default=None, env="FINNHUB_API_KEY")
+    
     # Model Configuration
     model_name: str = Field(default="ProsusAI/finbert", env="MODEL_NAME")
     max_sequence_length: int = Field(default=512, env="MAX_SEQUENCE_LENGTH")

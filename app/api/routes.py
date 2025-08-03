@@ -307,6 +307,10 @@ async def root() -> Dict[str, Any]:
             "fingpt_generate": "/fingpt/generate",
             "fingpt_analyze": "/fingpt/analyze",
             "combined_analyze": "/combined/analyze",
+            "enhanced_market_data": "/enhanced/market-data/{symbol}",
+            "enhanced_analysis": "/enhanced/enhanced-analysis",
+            "enhanced_sentiment": "/enhanced/market-sentiment/{symbol}",
+            "enhanced_news": "/enhanced/company-news/{symbol}",
             "docs": "/docs",
             "openapi": "/openapi.json"
         }
@@ -470,9 +474,12 @@ async def combined_financial_analysis(request: CombinedAnalysisRequest) -> Combi
         
         # Perform FinGPT analysis if requested
         if request.include_generation:
+            # Extract symbol from text for enhanced analysis
+            symbol = getattr(request, 'symbol', None)
             fingpt_result = await fingpt_service.analyze_financial_text(
                 text=request.text,
-                analysis_type=request.analysis_type
+                analysis_type=request.analysis_type,
+                symbol=symbol
             )
             generation_result = FinGPTAnalysisResponse(**fingpt_result)
         
