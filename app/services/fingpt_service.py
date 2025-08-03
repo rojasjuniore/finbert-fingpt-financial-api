@@ -48,14 +48,14 @@ class FinGPTService:
                 logger.info("Attempting to load FinGPT model...")
                 self.tokenizer = AutoTokenizer.from_pretrained(
                     self.model_name,
-                    use_auth_token=settings.hf_token,
-                    cache_dir=settings.transformers_cache
+                    token=settings.hf_token,
+                    cache_dir=settings.hf_home
                 )
                 
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.model_name,
-                    use_auth_token=settings.hf_token,
-                    cache_dir=settings.transformers_cache,
+                    token=settings.hf_token,
+                    cache_dir=settings.hf_home,
                     torch_dtype=torch.float16 if self.device.type == "cuda" else torch.float32,
                     device_map="auto" if self.device.type == "cuda" else None
                 )
@@ -69,12 +69,12 @@ class FinGPTService:
                 # Fallback to backup model
                 self.tokenizer = AutoTokenizer.from_pretrained(
                     self.backup_model,
-                    cache_dir=settings.transformers_cache
+                    cache_dir=settings.hf_home
                 )
                 
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.backup_model,
-                    cache_dir=settings.transformers_cache,
+                    cache_dir=settings.hf_home,
                     torch_dtype=torch.float16 if self.device.type == "cuda" else torch.float32
                 )
                 

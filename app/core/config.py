@@ -91,11 +91,12 @@ def get_settings() -> Settings:
 # Set environment variables for ML libraries
 settings = get_settings()
 
-if settings.transformers_cache:
-    os.environ["TRANSFORMERS_CACHE"] = settings.transformers_cache
-
+# Use HF_HOME instead of deprecated TRANSFORMERS_CACHE
 if settings.hf_home:
     os.environ["HF_HOME"] = settings.hf_home
+elif settings.transformers_cache:
+    # Fallback for backward compatibility, but prefer HF_HOME
+    os.environ["HF_HOME"] = settings.transformers_cache
 
 if settings.pytorch_cuda_alloc_conf:
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = settings.pytorch_cuda_alloc_conf
