@@ -145,7 +145,7 @@ class ErrorResponse(BaseModel):
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Error message")
     details: Optional[Dict[str, Any]] = Field(default=None, description="Error details")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Error timestamp")
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat(), description="Error timestamp")
 
 
 class SentimentScore(BaseModel):
@@ -153,4 +153,5 @@ class SentimentScore(BaseModel):
     sentiment: str = Field(..., description="Predicted sentiment")
     confidence: float = Field(..., description="Confidence score")
     probabilities: Optional[Dict[str, float]] = Field(default=None, description="Class probabilities")
+    processing_time: Optional[float] = Field(default=None, description="Processing time in seconds")
 
