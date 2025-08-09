@@ -30,7 +30,6 @@ class Settings(BaseSettings):
     batch_size: int = Field(default=32, env="BATCH_SIZE")
     
     # Cache Configuration
-    transformers_cache: Optional[str] = Field(default=None, env="TRANSFORMERS_CACHE")
     hf_home: Optional[str] = Field(default=None, env="HF_HOME")
     
     # Logging Configuration
@@ -91,12 +90,9 @@ def get_settings() -> Settings:
 # Set environment variables for ML libraries
 settings = get_settings()
 
-# Use HF_HOME instead of deprecated TRANSFORMERS_CACHE
+# Set HF_HOME environment variable
 if settings.hf_home:
     os.environ["HF_HOME"] = settings.hf_home
-elif settings.transformers_cache:
-    # Fallback for backward compatibility, but prefer HF_HOME
-    os.environ["HF_HOME"] = settings.transformers_cache
 
 if settings.pytorch_cuda_alloc_conf:
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = settings.pytorch_cuda_alloc_conf

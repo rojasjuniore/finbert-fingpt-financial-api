@@ -21,7 +21,6 @@ os.environ["REDIS_URL"] = "redis://localhost:6379/15"  # Test database
 os.environ["MODEL_NAME"] = "ProsusAI/finbert"
 os.environ["MAX_SEQUENCE_LENGTH"] = "512"
 os.environ["BATCH_SIZE"] = "1"  # Smaller batch for tests
-os.environ["TRANSFORMERS_CACHE"] = "/tmp/test_transformers_cache"
 os.environ["HF_HOME"] = "/tmp/test_hf_cache"
 
 
@@ -67,7 +66,6 @@ async def clean_redis(redis_client):
 def temp_cache_dir():
     """Create temporary cache directory for tests."""
     temp_dir = tempfile.mkdtemp(prefix="finbert_test_cache_")
-    os.environ["TRANSFORMERS_CACHE"] = temp_dir
     os.environ["HF_HOME"] = temp_dir
     
     yield temp_dir

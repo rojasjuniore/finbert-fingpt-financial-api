@@ -50,7 +50,7 @@ class FinBERTService:
             self.tokenizer = AutoTokenizer.from_pretrained(
                 settings.model_name,
                 token=settings.hf_token,
-                cache_dir=settings.transformers_cache
+                cache_dir=settings.hf_home
             )
             
             # Load model
@@ -58,7 +58,7 @@ class FinBERTService:
             self.model = AutoModelForSequenceClassification.from_pretrained(
                 settings.model_name,
                 token=settings.hf_token,
-                cache_dir=settings.transformers_cache
+                cache_dir=settings.hf_home
             )
             
             # Move model to device

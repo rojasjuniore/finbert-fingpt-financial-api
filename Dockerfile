@@ -7,7 +7,6 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    TRANSFORMERS_CACHE=/app/.cache/transformers \
     HF_HOME=/app/.cache/huggingface
 
 # Install system dependencies
@@ -17,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create cache directories
-RUN mkdir -p /app/.cache/transformers /app/.cache/huggingface /app/logs
+RUN mkdir -p /app/.cache/huggingface /app/logs
 
 # Copy requirements first for better caching
 COPY requirements.txt .
