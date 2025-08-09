@@ -146,16 +146,17 @@ class FinGPTService:
         start_time = time.time()
         
         try:
-            # Prepare generation parameters
+            # Prepare generation parameters - use max_new_tokens instead of max_length
             generation_params = {
-                "max_length": max_length,
+                "max_new_tokens": max_length,  # Use max_new_tokens to avoid conflict
                 "temperature": temperature,
                 "top_p": top_p,
                 "top_k": top_k,
                 "do_sample": do_sample,
                 "num_return_sequences": num_return_sequences,
                 "pad_token_id": self.tokenizer.eos_token_id,
-                "return_full_text": False
+                "return_full_text": False,
+                "clean_up_tokenization_spaces": True  # Handle tokenization spaces properly
             }
             
             # Generate text

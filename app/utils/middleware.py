@@ -34,7 +34,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         request.state.request_id = request_id
         
         try:
-            # Process request
+            # Process request with enhanced error handling
             response = await call_next(request)
             
             # Calculate processing time
@@ -60,14 +60,22 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             # Calculate processing time
             process_time = time.time() - start_time
             
-            # Log error
+            # Enhanced error logging with safe string formatting
+            error_msg = str(e)
+            error_type = type(e).__name__
+            
+            # Safely format the error message to avoid KeyError issues
             logger.error(
-                "Request failed",
+                "Request failed with error: {} - Type: {}",
+                error_msg.replace('{', '{{').replace('}', '}}'),  # Escape braces to prevent format errors
+                error_type,
                 extra={
                     "request_id": request_id,
-                    "error": str(e),
-                    "error_type": type(e).__name__,
+                    "error": error_msg,
+                    "error_type": error_type,
                     "process_time": process_time,
+                    "url": str(request.url),
+                    "method": request.method
                 }
             )
             

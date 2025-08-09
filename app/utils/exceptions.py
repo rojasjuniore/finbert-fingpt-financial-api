@@ -14,12 +14,16 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
     """Handle HTTP exceptions"""
     request_id = getattr(request.state, "request_id", "unknown")
     
+    # Safe logging to avoid string formatting issues
+    detail_msg = str(exc.detail).replace('{', '{{').replace('}', '}}')  # Escape braces
     logger.warning(
-        f"HTTP exception: {exc.status_code} - {exc.detail}",
+        "HTTP exception: {} - {}",
+        exc.status_code,
+        detail_msg,
         extra={
             "request_id": request_id,
             "status_code": exc.status_code,
-            "detail": exc.detail,
+            "detail": str(exc.detail),
             "url": str(request.url),
             "method": request.method
         }
@@ -44,11 +48,17 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
     """Handle general exceptions"""
     request_id = getattr(request.state, "request_id", "unknown")
     
+    # Safe logging for unhandled exceptions
+    exception_msg = str(exc).replace('{', '{{').replace('}', '}}')  # Escape braces
+    exception_type = type(exc).__name__
+    
     logger.error(
-        f"Unhandled exception: {type(exc).__name__} - {str(exc)}",
+        "Unhandled exception: {} - {}",
+        exception_type,
+        exception_msg,
         extra={
             "request_id": request_id,
-            "exception_type": type(exc).__name__,
+            "exception_type": exception_type,
             "exception_message": str(exc),
             "url": str(request.url),
             "method": request.method
@@ -74,8 +84,12 @@ async def validation_exception_handler(request: Request, exc: Exception) -> JSON
     """Handle validation exceptions"""
     request_id = getattr(request.state, "request_id", "unknown")
     
+    # Safe logging for validation exceptions
+    validation_msg = str(exc).replace('{', '{{').replace('}', '}}')  # Escape braces
+    
     logger.warning(
-        f"Validation error: {str(exc)}",
+        "Validation error: {}",
+        validation_msg,
         extra={
             "request_id": request_id,
             "validation_error": str(exc),

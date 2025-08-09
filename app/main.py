@@ -17,6 +17,7 @@ from .api.finnhub_routes import router as finnhub_router
 from .services.finbert_service import finbert_service
 from .services.fingpt_service import fingpt_service
 from .utils.middleware import LoggingMiddleware, RateLimitMiddleware
+from .utils.asgi_handler import ASGIStreamMiddleware
 from .utils.exceptions import (
     http_exception_handler,
     general_exception_handler,
@@ -84,7 +85,8 @@ app.add_middleware(
     allow_headers=settings.cors_headers,
 )
 
-# Add custom middleware
+# Add custom middleware - order matters!
+app.add_middleware(ASGIStreamMiddleware)  # Handle stream errors first
 app.add_middleware(LoggingMiddleware)
 
 # Add rate limiting if configured
