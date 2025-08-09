@@ -74,8 +74,29 @@ async def analyze_sentiment(request: SentimentRequest) -> SentimentResponse:
         if isinstance(request.text, list):
             metadata["text_count"] = len(request.text)
         
+        # Convert SentimentScore to SentimentResult format
+        if isinstance(results, list):
+            # Multiple results
+            sentiment_results = []
+            for i, result in enumerate(results):
+                sentiment_results.append({
+                    "text": request.text[i],
+                    "sentiment": result.sentiment,
+                    "confidence": result.confidence,
+                    "probabilities": result.probabilities
+                })
+            data = sentiment_results
+        else:
+            # Single result
+            data = {
+                "text": request.text,
+                "sentiment": results.sentiment,
+                "confidence": results.confidence,
+                "probabilities": results.probabilities
+            }
+        
         return SentimentResponse(
-            data=results,
+            data=data,
             metadata=metadata,
             total_processing_time=processing_time
         )
@@ -405,13 +426,34 @@ async def analyze_financial_text_fingpt(request: FinGPTAnalysisRequest) -> FinGP
                 detail="FinGPT model is not loaded. Please try again later."
             )
         
+        start_time = time.time()
+        
         # Perform analysis
         result = await fingpt_service.analyze_financial_text(
             text=request.text,
             analysis_type=request.analysis_type
         )
         
-        return FinGPTAnalysisResponse(**result)
+        # Extract key insights from the analysis
+        analysis_text = result.get("analysis", "")
+        key_insights = []
+        if analysis_text:
+            # Extract bullet points or key sentences as insights
+            lines = analysis_text.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line and (line.startswith('•') or line.startswith('-') or line.startswith('*')):
+                    key_insights.append(line.lstrip('•-* '))
+                elif len(key_insights) < 4 and line and len(line) > 20:
+                    key_insights.append(line)
+        
+        return FinGPTAnalysisResponse(
+            analysis=analysis_text,
+            analysis_type=result.get("analysis_type", request.analysis_type),
+            key_insights=key_insights[:4] if key_insights else None,
+            confidence_score=0.85,  # Default confidence score
+            total_processing_time=time.time() - start_time
+        )
         
     except HTTPException:
         raise

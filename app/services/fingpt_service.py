@@ -166,34 +166,33 @@ class FinGPTService:
             processing_time = time.time() - start_time
             
             # Process results
-            responses = []
-            for i, result in enumerate(results):
-                generated_text = result['generated_text']
-                
-                response = FinGPTResponse(
-                    prompt=prompt,
-                    generated_text=generated_text,
-                    model_name=self.model_name,
-                    processing_time=processing_time / len(results),
-                    generation_params={
-                        "max_length": max_length,
-                        "temperature": temperature,
-                        "top_p": top_p,
-                        "top_k": top_k,
-                        "do_sample": do_sample
-                    }
-                )
-                responses.append(response)
+            generated_texts = []
+            for result in results:
+                generated_texts.append(result['generated_text'])
             
             # Update statistics
             self.inference_count += len(results)
             self.total_inference_time += processing_time
             
-            # Return single response or list
-            if num_return_sequences == 1:
-                return responses[0]
-            else:
-                return responses
+            # Create response in the expected format
+            response = FinGPTResponse(
+                generated_text=generated_texts,
+                metadata={
+                    "model_name": self.model_name,
+                    "prompt_length": len(prompt),
+                    "generation_config": {
+                        "max_length": max_length,
+                        "temperature": temperature,
+                        "top_p": top_p,
+                        "top_k": top_k,
+                        "do_sample": do_sample,
+                        "num_return_sequences": num_return_sequences
+                    }
+                },
+                total_processing_time=processing_time
+            )
+            
+            return response
                 
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
@@ -257,9 +256,9 @@ class FinGPTService:
             result = {
                 "analysis_type": analysis_type,
                 "original_text": text,
-                "analysis": response.generated_text,
+                "analysis": response.generated_text[0] if response.generated_text else "",
                 "model_used": self.model_name,
-                "processing_time": response.processing_time,
+                "processing_time": response.total_processing_time,
                 "enhanced_with_finnhub": bool(finnhub_context),
                 "symbol": symbol.upper() if symbol else None
             }
